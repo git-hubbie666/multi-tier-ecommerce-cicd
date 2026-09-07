@@ -420,6 +420,29 @@ The frontend will run on the local Vite development server.
 ![GitHub Actions](screenshots/github%20actions.png)
 
 ---
+## ☁️ AWS Infrastructure Evidence
+
+The following screenshots provide evidence of the AWS services used to deploy and operate the application.
+
+### Amazon EC2
+![Amazon EC2](screenshots/EC2.png)
+
+The backend is deployed on an Amazon EC2 `t3.micro` instance running Node.js and Express.
+
+### Amazon RDS
+![Amazon RDS](screenshots/RDS.png)
+
+The application database is hosted on Amazon RDS using MySQL.
+
+### Amazon S3
+![Amazon S3](screenshots/S3.png)
+
+The React production build is deployed to an Amazon S3 bucket and served using S3 static website hosting.
+
+### IAM / GitHub OIDC
+![IAM GitHub OIDC](screenshots/iam.png)
+
+GitHub Actions uses an IAM role with GitHub OIDC authentication to securely deploy the frontend to Amazon S3 without storing long-term AWS access keys.
 
 ## 🧠 Key Learnings
 
