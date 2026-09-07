@@ -1,0 +1,45 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy backend to EC2
+        run: |
+          ssh ec2-user@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+
+            cd ~/multi-tier-ecommerce-cicd
+
+            echo "Pulling latest code..."
+            git pull --ff-only origin main
+
+            echo "Installing backend dependencies..."
+            cd backend
+            npm ci --omit=dev
+
+            echo "Restarting backend..."
+            pm2 restart shopease-backend --update-env
+
+            echo "Deployment completed successfully!"
+            pm2 status
+          EOF
