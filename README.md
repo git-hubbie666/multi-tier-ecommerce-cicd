@@ -1,235 +1,485 @@
-# ShopEase — Full-Stack E-Commerce Web Application
+# 🛒 ShopEase — Multi-Tier E-Commerce Web Application with CI/CD
 
-A complete e-commerce web application built for a college cloud computing internship
-project. It demonstrates a full shopping workflow (browse → search/filter → product
-detail → cart → checkout → order) on a React frontend, an Express REST API, and a
-MySQL database, structured to be deployable later as a multi-tier AWS application.
+ShopEase is a full-stack e-commerce web application deployed using a multi-tier cloud architecture on AWS.
 
----
-
-## 1. Features
-
-**Frontend**
-- Responsive homepage with categories and featured products
-- Product listing with search and category filtering
-- Product detail page with quantity selector and stock awareness
-- Persistent shopping cart (add/remove/update quantity, running total)
-- Checkout page that creates a real order in the database (no payment gateway —
-  checkout is simulated)
-- Order confirmation page
-- Login / Register UI backed by JWT authentication
-- Loading, error, and empty states throughout
-- Clean, responsive design (desktop + mobile)
-
-**Backend**
-- REST API built with Express
-- Products, categories, cart validation, orders, and auth endpoints
-- Server-side re-validation of prices and stock at checkout (never trusts client-sent
-  prices)
-- Transactional order creation: order + order_items + stock decrement happen atomically
-- Input validation (`express-validator`), centralized error handling, consistent
-  JSON responses and HTTP status codes
-- Configurable CORS (so a future CloudFront/S3 frontend domain can be allow-listed)
-- All configuration via environment variables — no hardcoded credentials
-
-**Database**
-- MySQL schema: `users`, `categories`, `products`, `orders`, `order_items`
-- Seed data: 5 categories, 18 products, ready to browse immediately
+The project demonstrates how a frontend, backend API, and relational database can be separated into independent application tiers and connected through automated CI/CD pipelines using GitHub Actions.
 
 ---
 
-## 2. Tech Stack
+## 🚀 Project Overview
 
-| Layer      | Technology                          |
-|------------|--------------------------------------|
-| Frontend   | React 18, Vite, React Router, CSS   |
-| Backend    | Node.js, Express.js                 |
-| Database   | MySQL 8                             |
-| Auth       | JWT (jsonwebtoken) + bcrypt          |
-| Validation | express-validator                   |
+ShopEase consists of three main application tiers:
 
-No Docker, Kubernetes, Redis, GraphQL, or other extra infrastructure — kept
-intentionally simple per project scope.
+- **Frontend:** React + Vite
+- **Backend:** Node.js + Express REST API
+- **Database:** MySQL on Amazon RDS
+
+### ☁️ AWS Deployment
+
+- **Amazon S3** — Frontend deployment
+- **Amazon EC2** — Backend application
+- **Amazon RDS** — MySQL database
+- **AWS IAM** — Identity and access management
+- **GitHub Actions** — CI/CD automation
+- **GitHub OIDC** — Secure AWS authentication
+- **PM2** — Node.js process management
+- **AWS Security Groups** — Network access control
+
+The application was tested end-to-end with the React frontend communicating with the backend running on EC2 and the database hosted on Amazon RDS.
 
 ---
 
-## 3. Folder Structure
+## ✨ Features
 
+### 🎨 Frontend
+
+- Responsive e-commerce interface
+- Product browsing
+- Product search
+- Category filtering
+- Product details
+- Shopping cart
+- Cart quantity management
+- Checkout flow
+- Order confirmation
+- User registration and login
+- JWT-based authentication
+- Loading and error states
+
+### ⚙️ Backend
+
+- RESTful API built with Node.js and Express
+- Product and category APIs
+- Shopping cart APIs
+- User authentication
+- JWT authentication
+- Password hashing using bcrypt
+- Input validation
+- Transaction-based order processing
+- Stock quantity management
+- Configurable CORS
+- Centralized error handling
+
+### 🗄️ Database
+
+- MySQL relational database
+- Users
+- Products
+- Categories
+- Cart
+- Orders
+- Order items
+- Relational database relationships
+- Seed data with sample products
+
+---
+
+## 🏗️ AWS Architecture
+
+The application follows a multi-tier architecture with separate frontend, backend, and database tiers.
+
+![ShopEase AWS Architecture](architecture/architecture-diagram.png)
+
+### Frontend Tier
+
+The React/Vite application is built into production-ready static files and deployed to an Amazon S3 bucket using GitHub Actions.
+
+### Backend Tier
+
+The Node.js/Express REST API runs on an Amazon EC2 instance.
+
+PM2 is used to manage the Node.js application process and keep the backend running.
+
+### Database Tier
+
+The application uses Amazon RDS running MySQL.
+
+The RDS database is not publicly accessible. Database access is restricted to the backend EC2 instance through AWS Security Groups.
+
+---
+
+## 🔄 CI/CD Pipeline
+
+GitHub Actions automates deployment whenever relevant code changes are pushed to the `main` branch.
+
+### 🎨 Frontend CI/CD
+
+```text
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+GitHub Actions
+    │
+    ├── Checkout repository
+    ├── Install dependencies
+    ├── Build React application
+    ├── Authenticate with AWS using OIDC
+    └── Deploy production build
+            │
+            ▼
+        Amazon S3
 ```
-ecommerce-project/
-├── frontend/                 # React + Vite app
-│   ├── src/
-│   │   ├── api/              # fetch wrapper / API client
-│   │   ├── components/       # Navbar, ProductCard, Loading, ErrorMessage
-│   │   ├── context/          # CartContext (localStorage-backed cart state)
-│   │   ├── pages/            # Home, ProductList, ProductDetail, Cart,
-│   │   │                     # Checkout, OrderConfirmation, Login, Register
-│   │   ├── styles/           # index.css (design system)
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── package.json
-│   └── .env.example
+
+The frontend workflow:
+
+1. Checks out the repository
+2. Installs frontend dependencies
+3. Builds the React application
+4. Authenticates with AWS using GitHub OIDC
+5. Deploys the production build to Amazon S3
+
+### ⚙️ Backend CI/CD
+
+```text
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ▼
+GitHub Actions
+    │
+    ├── Checkout repository
+    ├── Connect to EC2 using SSH
+    ├── Pull latest code
+    ├── Install production dependencies
+    └── Restart application using PM2
+            │
+            ▼
+        Amazon EC2
+```
+
+The backend workflow:
+
+1. Checks out the repository
+2. Establishes an SSH connection to EC2
+3. Pulls the latest code from GitHub
+4. Installs production dependencies
+5. Restarts the Node.js application using PM2
+
+---
+
+## 🔐 Security
+
+The project implements several security practices:
+
+- Environment variables for application configuration
+- Secrets excluded from Git using `.gitignore`
+- GitHub OIDC for temporary AWS credentials
+- No permanent AWS access keys stored in GitHub
+- SSH authentication for backend deployment
+- Separate EC2 and RDS Security Groups
+- RDS database is not publicly accessible
+- Database access restricted to the backend server
+- Configurable CORS
+- Sensitive credentials are never committed to the repository
+
+Sensitive values such as database passwords, JWT secrets, private SSH keys, and AWS credentials are stored outside the source code.
+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend
+
+- React 18
+- Vite
+- React Router
+- JavaScript
+- CSS
+
+### Backend
+
+- Node.js
+- Express.js
+- REST API
+- JWT
+- bcrypt
+- express-validator
+- CORS
+
+### Database
+
+- MySQL 8
+- Amazon RDS
+
+### Cloud & DevOps
+
+- Amazon EC2
+- Amazon S3
+- Amazon RDS
+- AWS IAM
+- AWS Security Groups
+- GitHub Actions
+- GitHub OIDC
+- PM2
+
+### Development Tools
+
+- Git
+- GitHub
+- VS Code
+- npm
+
+---
+
+## 📁 Project Structure
+
+```text
+multi-tier-ecommerce-cicd/
 │
-├── backend/                  # Express REST API
+├── frontend/
 │   ├── src/
-│   │   ├── config/db.js      # MySQL connection pool
-│   │   ├── controllers/      # products, categories, cart, orders, auth
-│   │   ├── middleware/       # errorHandler, validate, auth
-│   │   ├── routes/           # route definitions per resource
-│   │   ├── app.js            # Express app (middleware + routes)
-│   │   └── server.js         # entry point
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   ├── config/
+│   │   └── server.js
 │   ├── package.json
 │   └── .env.example
 │
 ├── database/
-│   ├── schema.sql            # table definitions + relationships
-│   └── seed.sql              # sample categories/products
+│   ├── schema.sql
+│   └── seed.sql
 │
-├── screenshots/              # (add UI screenshots here for submission)
-├── architecture/             # (add architecture diagram here for submission)
-├── .github/workflows/        # placeholder for future CI/CD pipelines
+├── screenshots/
+│   ├── homepage.png
+│   ├── categories.png
+│   ├── user login.png
+│   ├── cart.png
+│   ├── checkout.png
+│   └── github actions.png
+│
+├── architecture/
+│   └── architecture-diagram.png
+│
+├── .github/
+│   └── workflows/
+│       ├── deploy-frontend.yml
+│       └── deploy-backend.yml
+│
 ├── .gitignore
 ├── .env.example
+├── LEARNINGS.md
 └── README.md
 ```
 
 ---
 
-## 4. Local Setup
+## ⚙️ Local Setup
 
-### Prerequisites
-- Node.js 18+
-- MySQL 8.0+ running locally (or accessible remotely)
-
-### 4.1 Database setup
+### 1. Clone the Repository
 
 ```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/seed.sql
+git clone https://github.com/git-hubbie666/multi-tier-ecommerce-cicd.git
+cd multi-tier-ecommerce-cicd
 ```
 
-This creates the `shopease` database with all tables and populates it with sample
-categories and products.
-
-### 4.2 Backend setup
+### 2. Backend Setup
 
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# edit .env with your local MySQL credentials
-npm run dev        # starts on http://localhost:5000 (nodemon)
-# or: npm start
 ```
 
-Health check: `GET http://localhost:5000/api/health`
+Create a `.env` file:
 
-### 4.3 Frontend setup
+```env
+PORT=5000
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=shopease
+DB_USER=root
+DB_PASSWORD=your_password
+JWT_SECRET=your_secret
+CORS_ORIGIN=http://localhost:5173
+```
+
+Start the backend:
+
+```bash
+npm run dev
+```
+
+The API will run on:
+
+```text
+http://localhost:5000
+```
+
+### 3. Database Setup
+
+Create the MySQL database:
+
+```sql
+CREATE DATABASE shopease;
+```
+
+Import the database schema and seed data from the `database/` directory.
+
+### 4. Frontend Setup
+
+Open another terminal:
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env
-# VITE_API_BASE_URL defaults to http://localhost:5000/api
-npm run dev         # starts on http://localhost:5173
+npm run dev
 ```
 
-Open `http://localhost:5173` in your browser. The full shopping flow (browse →
-search/filter → product detail → cart → checkout → order confirmation) works
-end-to-end against the local API and database.
+The frontend will run on the local Vite development server.
 
 ---
 
-## 5. Environment Variables
+## 🔌 API Overview
 
-**backend/.env**
-
-| Variable        | Description                                      |
-|-----------------|---------------------------------------------------|
-| `PORT`          | Port the API listens on (default 5000)            |
-| `NODE_ENV`      | `development` / `production`                      |
-| `CORS_ORIGIN`   | Comma-separated allowed origins for the frontend  |
-| `DB_HOST`       | MySQL host (RDS endpoint in production)           |
-| `DB_PORT`       | MySQL port (default 3306)                         |
-| `DB_USER`       | MySQL username                                    |
-| `DB_PASSWORD`   | MySQL password                                    |
-| `DB_NAME`       | Database name (`shopease`)                        |
-| `JWT_SECRET`    | Secret used to sign auth tokens                   |
-| `JWT_EXPIRES_IN`| Token lifetime (e.g. `7d`)                        |
-
-**frontend/.env**
-
-| Variable              | Description                                  |
-|------------------------|----------------------------------------------|
-| `VITE_API_BASE_URL`    | Base URL of the backend API                  |
-
-None of these files with real values are committed — only `.env.example` templates
-are tracked in git (`.gitignore` excludes all `.env` files).
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/products` | Get products |
+| GET | `/api/categories` | Get categories |
+| GET | `/api/products/:id` | Get product details |
+| POST | `/api/auth/register` | Register user |
+| POST | `/api/auth/login` | Login user |
+| GET | `/api/cart` | Get cart |
+| POST | `/api/cart` | Add item to cart |
+| PUT | `/api/cart/:id` | Update cart item |
+| DELETE | `/api/cart/:id` | Remove cart item |
+| POST | `/api/orders` | Create order |
 
 ---
 
-## 6. API Overview
+## ☁️ AWS Resources
 
-Base path: `/api`
-
-| Method | Endpoint                | Description                                  |
-|--------|--------------------------|-----------------------------------------------|
-| GET    | `/health`                | API health check                              |
-| GET    | `/products`              | List products (`?search=&category=&page=&limit=`) |
-| GET    | `/products/:id`          | Get a single product                          |
-| GET    | `/categories`            | List categories                               |
-| GET    | `/categories/:id`        | Get a single category                         |
-| POST   | `/cart/validate`         | Re-price/validate a cart against live stock   |
-| POST   | `/orders`                | Create an order (validates stock, transactional) |
-| GET    | `/orders/:id`            | Get order details + line items                |
-| POST   | `/auth/register`         | Register a new user                           |
-| POST   | `/auth/login`            | Log in, returns a JWT                         |
-| GET    | `/auth/me`               | Get the current user (requires Bearer token)  |
-
-All responses follow the shape `{ success, data | message, ... }` with appropriate
-HTTP status codes (200/201 success, 400/401/404/409 client errors, 500 server errors).
+| AWS Resource | Purpose |
+|---|---|
+| Amazon S3 | Host and deploy frontend build |
+| Amazon EC2 | Run Node.js/Express backend |
+| Amazon RDS | Host MySQL database |
+| AWS IAM | Manage permissions and OIDC authentication |
+| Security Groups | Control network access |
+| GitHub Actions | Automate CI/CD |
+| PM2 | Manage Node.js backend process |
 
 ---
 
-## 7. Future AWS Deployment Architecture
+## 📊 Deployment Flow
 
-This project ("Multi-Tier Web Application with CI/CD") is designed to map onto:
-
+```text
+                         GitHub Repository
+                                │
+                  ┌─────────────┴─────────────┐
+                  │                           │
+                  ▼                           ▼
+          Frontend Workflow            Backend Workflow
+          GitHub Actions               GitHub Actions
+                  │                           │
+                  ▼                           ▼
+             Amazon S3                  Amazon EC2
+          React Frontend             Node.js + Express
+                                              │
+                                              ▼
+                                         Amazon RDS
+                                         MySQL Database
 ```
-                     ┌──────────────────┐
-   User  ──────────► │  CloudFront (CDN) │
-                     └─────────┬────────┘
-                               │ static assets
-                     ┌─────────▼────────┐
-                     │   S3 (frontend    │
-                     │   production build)│
-                     └───────────────────┘
 
-   Browser (React) ─── HTTPS ──► EC2 (Node/Express API)
-                                       │
-                                       ▼
-                               RDS (MySQL)
-```
+---
 
-- **Frontend → S3 + CloudFront**: `npm run build` in `frontend/` produces static
-  assets in `frontend/dist/`, uploaded to an S3 bucket and served via CloudFront.
-  `VITE_API_BASE_URL` is set at build time to point at the EC2 API's public URL.
-- **Backend → EC2**: the `backend/` app runs with `npm start` on an EC2 instance
-  (Node.js installed). `PORT` and all DB/JWT config come from environment variables
-  set on the instance (or a `.env` file that is never committed).
-- **Database → RDS MySQL**: `DB_HOST`/`DB_USER`/`DB_PASSWORD`/`DB_NAME` point at the
-  RDS endpoint instead of localhost — no code changes required.
-- **CORS**: `CORS_ORIGIN` on the backend is set to the CloudFront domain once it
-  exists, so the deployed frontend can call the EC2 API.
-- **CI/CD → GitHub Actions**: `.github/workflows/` is reserved for two pipelines to
-  be added once infrastructure exists — one to build the frontend and sync it to S3
-  (invalidating CloudFront), and one to deploy the backend to EC2. These are not yet
-  created, per the current project phase.
+## 📸 Screenshots
 
-### Next step for AWS deployment
-Provision the AWS infrastructure (S3 bucket + CloudFront distribution, EC2 instance,
-RDS MySQL instance, and appropriate IAM/security groups), then add the GitHub Actions
-workflows under `.github/workflows/` to automate the build-and-deploy steps described
-above.
+### 🏠 Homepage
+
+![ShopEase Homepage](screenshots/homepage.png)
+
+### 📂 Product Categories
+
+![Product Categories](screenshots/categories.png)
+
+### 👤 User Login
+
+![User Login](screenshots/user%20login.png)
+
+### 🛒 Shopping Cart
+
+![Shopping Cart](screenshots/cart.png)
+
+### 💳 Checkout
+
+![Checkout](screenshots/checkout.png)
+
+### ⚙️ GitHub Actions CI/CD
+
+![GitHub Actions](screenshots/github%20actions.png)
+
+---
+
+## 🧠 Key Learnings
+
+Through this project, the following concepts were implemented:
+
+- Multi-tier application architecture
+- React frontend deployment
+- REST API development
+- MySQL database integration
+- Amazon EC2 deployment
+- Amazon RDS deployment
+- Amazon S3 deployment
+- Linux server management
+- PM2 process management
+- Git and GitHub
+- GitHub Actions
+- CI/CD pipelines
+- GitHub OIDC authentication
+- AWS IAM
+- AWS Security Groups
+- Environment-based configuration
+- CORS configuration
+- Cloud deployment troubleshooting
+
+---
+
+## ⚠️ CloudFront
+
+CloudFront was planned as part of the original frontend architecture.
+
+However, CloudFront resource creation was blocked by an AWS account-level access restriction even though customer verification had been completed.
+
+Therefore, CloudFront was not included in the final deployed environment.
+
+The implemented application successfully uses Amazon S3, EC2, and RDS with automated CI/CD deployment.
+
+---
+
+## 🎯 Project Objective
+
+This project was developed as part of a Cloud Computing internship to demonstrate practical knowledge of:
+
+- Cloud infrastructure
+- Multi-tier architecture
+- AWS services
+- Application deployment
+- CI/CD automation
+- Database integration
+- Cloud security fundamentals
+- DevOps practices
+
+---
+
+## 👨‍💻 Author
+
+**Abhimanyu Yadav**
+
+BTech Computer Science & Engineering  
+Cloud Computing
+
+---
+
+⭐ If you found this project useful, feel free to explore the repository and its implementation.
