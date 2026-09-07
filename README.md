@@ -1,4 +1,10 @@
-# 🛒 ShopEase — Multi-Tier E-Commerce Web Application with CI/CD
+# 🛒 ShopEase — Multi-Tier E-commerce Application with CI/CD
+
+## 🌐 Live Demo
+
+[Open ShopEase Live Demo](http://this-is-my-bucket-not-yours-for-shopease.s3-website.ap-south-1.amazonaws.com)
+
+> The application is deployed using Amazon S3, EC2, and Amazon RDS./CD
 
 ShopEase is a full-stack e-commerce web application deployed using a multi-tier cloud architecture on AWS.
 
